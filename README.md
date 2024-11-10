@@ -27,13 +27,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Set up your environment variables:
-```bash
-# Create .env file
-echo "OPENAI_API_KEY=your-api-key-here" > .env
-```
-
-5. Run the server:
+4. Run the server:
 ```bash
 # Basic run
 uvicorn app.main:app --reload
