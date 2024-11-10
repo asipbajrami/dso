@@ -1,4 +1,4 @@
-# Dynamic Structure Output 🎯
+# Dynamic Schema Extractor 🎯
 
 An advanced FastAPI service that allows you to create dynamic schemas and extract structured information from any text using AI. Perfect for automating data extraction from unstructured text like articles, job postings, product descriptions, or any other text format.
 
@@ -101,72 +101,10 @@ POST /schemas
                     "required": false
                 }
             ]
-        },
-        {
-            "key": "specifications",
-            "type": "array",
-            "description": "Technical specifications",
-            "required": false,
-            "children": [
-                {
-                    "key": "name",
-                    "type": "string",
-                    "description": "Specification name",
-                    "required": true
-                },
-                {
-                    "key": "value",
-                    "type": "string",
-                    "description": "Specification value",
-                    "required": true
-                }
-            ]
-        },
-        {
-            "key": "inventory",
-            "type": "object",
-            "description": "Inventory information",
-            "required": false,
-            "children": [
-                {
-                    "key": "quantity",
-                    "type": "int",
-                    "description": "Available quantity",
-                    "required": true
-                },
-                {
-                    "key": "locations",
-                    "type": "array",
-                    "description": "Storage locations",
-                    "required": false,
-                    "children": [
-                        {
-                            "key": "warehouse",
-                            "type": "string",
-                            "description": "Warehouse identifier",
-                            "required": true
-                        },
-                        {
-                            "key": "stock",
-                            "type": "int",
-                            "description": "Stock at this location",
-                            "required": true
-                        }
-                    ]
-                }
-            ]
         }
     ]
 }
 ```
-
-**Field Type Rules:**
-- `string`: Text values, can include `enum_values` for validation
-- `int`: Whole numbers only
-- `float`: Decimal numbers
-- `boolean`: true/false values
-- `object`: Nested fields with `children`
-- `array`: List of items with consistent structure defined in `children`
 
 **Response:**
 ```json
@@ -177,55 +115,79 @@ POST /schemas
 
 ### 2. Extract Information (`POST /extract`)
 
-Example using the comprehensive schema:
+You can extract information in two ways:
 
+#### A. Using a Saved Schema ID:
 ```json
 POST /extract
 {
-    "text": "New MacBook Pro 2024 (SKU: MB2024PRO) in Electronics category. Premium laptop priced at $1,999.99 USD. Currently on sale! Specifications include: 16GB RAM, 1TB SSD. Available stock: 50 units total, distributed across warehouses: NYC-1 (30 units), LA-2 (20 units).",
+    "text": "New MacBook Pro 2024 (SKU: MB2024PRO) in Electronics category. Premium laptop priced at $1,999.99 USD. Currently on sale!",
     "schema_id": "e4563fe7-1e73-456e-a263-4799295546ce",
     "api_key": "sk-..."
 }
 ```
 
-**Response:**
+#### B. Using Direct Fields Definition:
+```json
+POST /extract
+{
+    "text": "New MacBook Pro 2024 (SKU: MB2024PRO) in Electronics category. Premium laptop priced at $1,999.99 USD. Currently on sale!",
+    "fields": [
+        {
+            "key": "product_name",
+            "type": "string",
+            "description": "Name of the product",
+            "required": true
+        },
+        {
+            "key": "price",
+            "type": "object",
+            "description": "Price information",
+            "required": true,
+            "children": [
+                {
+                    "key": "amount",
+                    "type": "float",
+                    "description": "Price amount",
+                    "required": true
+                },
+                {
+                    "key": "currency",
+                    "type": "string",
+                    "description": "Currency code",
+                    "required": true,
+                    "enum_values": ["USD", "EUR", "GBP"]
+                }
+            ]
+        },
+        {
+            "key": "on_sale",
+            "type": "boolean",
+            "description": "Whether the item is on sale",
+            "required": false
+        }
+    ],
+    "api_key": "sk-..."
+}
+```
+
+**Important Rules:**
+- You MUST provide either `schema_id` OR `fields`, but not both
+- Text has a maximum length of 10,000 characters
+- Direct fields follow the same structure as schema creation
+- Valid OpenAI API key required
+
+**Response Example:**
 ```json
 {
     "extracted_data": [
         {
-            "basic_info": {
-                "name": "MacBook Pro 2024",
-                "sku": "MB2024PRO",
-                "category": "Electronics"
-            },
-            "pricing": {
+            "product_name": "MacBook Pro 2024",
+            "price": {
                 "amount": 1999.99,
-                "currency": "USD",
-                "discounted": true
+                "currency": "USD"
             },
-            "specifications": [
-                {
-                    "name": "RAM",
-                    "value": "16GB"
-                },
-                {
-                    "name": "Storage",
-                    "value": "1TB SSD"
-                }
-            ],
-            "inventory": {
-                "quantity": 50,
-                "locations": [
-                    {
-                        "warehouse": "NYC-1",
-                        "stock": 30
-                    },
-                    {
-                        "warehouse": "LA-2",
-                        "stock": 20
-                    }
-                ]
-            }
+            "on_sale": true
         }
     ]
 }
@@ -282,7 +244,7 @@ DELETE /schemas/e4563fe7-1e73-456e-a263-4799295546ce
 
 | Status Code | Meaning | Common Causes |
 |------------|---------|---------------|
-| 400 | Bad Request | Invalid schema structure, missing required fields |
+| 400 | Bad Request | Missing schema_id or fields, invalid schema structure |
 | 401 | Unauthorized | Invalid or missing API key |
 | 404 | Not Found | Schema ID doesn't exist |
 | 429 | Too Many Requests | Exceeded OpenAI API rate limits |
@@ -309,7 +271,6 @@ uvicorn app.main:app --reload --log-level debug
 
 ## 🔐 Security Notes
 
-- Keep your `.env` file secure and never commit it
 - API keys are validated for basic format (sk-... and length)
 - Text input is limited to 10,000 characters
 - Schema names are validated to prevent injection
