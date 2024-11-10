@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+app/__pycache__/
+*.cpython-312.pyc
+
+# IDE
+.idea/
+.idea/*.iml
+.idea/*.xml
+.idea/inspectionProfiles/
+
+# Generated schemas
+schema_models/*.py
+schema_models/*.json
+schema_models/__pycache__/
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment
+.env
