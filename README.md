@@ -294,16 +294,6 @@ DELETE /schemas/e4563fe7-1e73-456e-a263-4799295546ce
 | 429 | Too Many Requests | Exceeded OpenAI API rate limits |
 | 500 | Server Error | Internal processing error |
 
-## 🔑 Environment Setup
-
-Required environment variables in `.env`:
-```bash
-OPENAI_API_KEY=sk-...     # Your OpenAI API key
-MODEL_NAME=gpt-4o-mini    # Optional: Override default model
-HOST=0.0.0.0             # Optional: API host
-PORT=8000                # Optional: API port
-```
-
 ## 📚 Dependencies
 
 Key dependencies and their purposes:
