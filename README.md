@@ -1,4 +1,4 @@
-# Dynamic Schema Extractor 🎯
+# Dynamic Structure Output 🎯
 
 An advanced FastAPI service that allows you to create dynamic schemas and extract structured information from any text using AI. Perfect for automating data extraction from unstructured text like articles, job postings, product descriptions, or any other text format.
 
